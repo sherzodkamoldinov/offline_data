@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:offline_data/data/service/local_data/local_database.dart';
 import 'package:offline_data/ui/home_page.dart';
 
-void main() {
+void main() async {
+
   runApp(const MyApp());
 }
 
@@ -13,7 +15,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-
         primarySwatch: Colors.blue,
       ),
       home: const HomePage(),
