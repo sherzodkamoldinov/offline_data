@@ -50,7 +50,7 @@ class LocalDataBase {
 
   //-------------------------------------------Cached Users Table------------------------------------
 
-  static Future<CachedNbu> insertCachedNbuFromAPI(CurrencyModel currencyItem) async {
+  static Future<CachedNbu> insertCachedNbuFromAPI({required CurrencyModel currencyItem}) async {
     final db = await getInstance.database;
     CachedNbu cachedNbu = CachedNbu(
       buyPrice: currencyItem.nbuBuyPrice,

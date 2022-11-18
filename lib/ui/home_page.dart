@@ -6,26 +6,18 @@ import 'package:offline_data/cubit/conectivity/connectivity_cubit.dart';
 import 'package:offline_data/cubit/currency/currency_cubit.dart';
 import 'package:offline_data/data/models/currency/currency_model.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: BlocProvider.of<CurrencyCubit>(context).state.isInternet
-            ? Text('ONLINE')
-            : Text('OFFLINE'),
+        title: Text(
+          context.watch<CurrencyCubit>().state.isInternet
+              ? "ONLINE"
+              : "OFFLINE",
+        ),
       ),
       body: BlocListener<ConnectivityCubit, ConnectivityState>(
         listener: (BuildContext context, connectState) {
@@ -34,6 +26,7 @@ class _HomePageState extends State<HomePage> {
           } else {
             context.read<CurrencyCubit>().getCurrenciesFromStorage();
           }
+          // debugPrint("INTERNET1: ${state.isInternet}");
         },
         child: BlocConsumer<CurrencyCubit, CurrencyState>(
           builder: (BuildContext context, currencyState) {
@@ -43,15 +36,19 @@ class _HomePageState extends State<HomePage> {
                     child: CircularProgressIndicator(),
                   )
                 : ListView.builder(
+                    physics: const BouncingScrollPhysics(),
                     itemCount: cur.length,
                     itemBuilder: (context, index) {
                       return ListTile(
                         title: Text(cur[index].title),
+                        subtitle: currencyState.isInternet ? Text(cur[index].cbPrice) : null,
                       );
                     },
                   );
           },
-          listener: (BuildContext context, Object? state) {},
+          listener: (BuildContext context, state) {
+            debugPrint("INTERNET WORK: ${state.isInternet}");
+          },
         ),
       ),
     );

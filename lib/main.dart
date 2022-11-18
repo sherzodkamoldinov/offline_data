@@ -16,14 +16,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<ConnectivityCubit>(
-      create: (context) =>
-          ConnectivityCubit(),
+      create: (context) => ConnectivityCubit(),
       child: BlocProvider<CurrencyCubit>(
-        create: (context) => CurrencyCubit(currencyRepository: CurrencyRepository()),
+        create: (context) =>
+            CurrencyCubit(currencyRepository: CurrencyRepository()),
         child: MaterialApp(
-          title: 'Flutter Demo',
+          debugShowCheckedModeBanner: false,
+          title: 'OFFLINE DATA',
           theme: ThemeData(
             primarySwatch: Colors.blue,
+            useMaterial3: true,
           ),
           home: const HomePage(),
         ),
