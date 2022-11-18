@@ -26,9 +26,9 @@ class _HomePageState extends State<HomePage> {
             );
           } else if (snapshot.hasData) {
             var currencies = snapshot.data;
-            return SizedBox();
+            return const SizedBox();
           } else {
-            return Text('Nothing');
+            return const Text('Nothing');
           }
         },
       ),
