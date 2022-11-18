@@ -1,135 +1,78 @@
-import 'package:offline_data/data/service/local_data/cached_product.dart';
+import 'package:offline_data/data/models/currency/currency_model.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite/sqlite_api.dart';
 import 'package:path/path.dart';
 
-class LocalDatabase {
-  static final LocalDatabase getInstance = LocalDatabase._init();
-  static Database? _database;
 
-  factory LocalDatabase() {
+import 'cached_user_model.dart';
+
+class LocalDataBase {
+  static final LocalDataBase getInstance = LocalDataBase._();
+
+  LocalDataBase._();
+
+  factory LocalDataBase() {
     return getInstance;
   }
+
+  static Database? _database;
 
   Future<Database> get database async {
     if (_database != null) {
       return _database!;
     } else {
-      _database = await _initDB("currency.db");
+      _database = await _initializeDB("database.db");
       return _database!;
     }
   }
 
-  Future<Database> _initDB(String filePath) async {
+  Future<Database> _initializeDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
     return await openDatabase(path, version: 1, onCreate: _createDB);
   }
 
-  LocalDatabase._init();
-
   Future _createDB(Database db, int version) async {
     const idType = "INTEGER PRIMARY KEY AUTOINCREMENT";
     const textType = "TEXT NOT NULL";
-    const intType = "INTEGER DEFAULT 0";
 
     await db.execute('''
-    CREATE TABLE $currencyTable (
-    ${CurrencyFields.id} $idType,
-    ${CurrencyFields.title} $textType,
-    ${CurrencyFields.code} $textType,
-    ${CurrencyFields.cbPrice} $textType,
-    ${CurrencyFields.nbuBuyPrice} $textType,
-    ${CurrencyFields.nbuCellPrice} $textType,
-    ${CurrencyFields.date} $textType
+    CREATE TABLE $nbuTable (
+    ${CachedNbuFields.id} $idType,
+    ${CachedNbuFields.title} $textType,
+    ${CachedNbuFields.code} $textType,
+    ${CachedNbuFields.cbPrice} $textType,
+    ${CachedNbuFields.buyPrice} $textType,
+    ${CachedNbuFields.cellPrice} $textType,
+    ${CachedNbuFields.date} $textType
     )
     ''');
   }
 
-  //-------------------Cached Currencies Table-------------------
+  //-------------------------------------------Cached Users Table------------------------------------
 
-  static Future<CachedCurrency> insertCachedProduct(
-      CachedCurrency cachedCurrency) async {
+  static Future<CachedNbu> insertCachedNbuFromAPI(CurrencyModel currencyItem) async {
     final db = await getInstance.database;
-    final id = await db.insert(currencyTable, cachedCurrency.toJson());
-    return cachedCurrency.copyWith(id: id);
-  }
-
-  // static Future<CachedProduct> getSingleProductById(int id) async {
-  //   final db = await getInstance.database;
-  //   final results = await db.query(
-  //     productsTable,
-  //     columns: ProductFields.values,
-  //     where: '${ProductFields.id} = ?',
-  //     whereArgs: [id],
-  //   );
-  //   if (results.isNotEmpty) {
-  //     return CachedProduct.fromJson(results.first);
-  //   } else {
-  //     throw Exception('ID $id not found');
-  //   }
-  // }
-
-  static Future<List<CachedCurrency>> getAllCachedCurrencies() async {
-    final db = await getInstance.database;
-    const orderBy = "${CurrencyFields.title} ASC";
-    final result = await db.query(
-      currencyTable,
-      orderBy: orderBy,
+    CachedNbu cachedNbu = CachedNbu(
+      buyPrice: currencyItem.nbuBuyPrice,
+      cbPrice: currencyItem.cbPrice,
+      cellPrice: currencyItem.cbPrice,
+      code: currencyItem.code,
+      date: currencyItem.date,
+      title: currencyItem.title,
     );
-    return result.map((json) => CachedCurrency.fromJson(json)).toList();
+    final id = await db.insert(nbuTable, cachedNbu.toJson());
+    return cachedNbu.copyWith(id: id);
   }
 
-  static Future<int> deleteAllCachedCurrencies() async {
+  static Future<List<CachedNbu>> getAllCachedNbus() async {
     final db = await getInstance.database;
-    return await db.delete(currencyTable);
+    const orderBy = CachedNbuFields.id;
+    final result = await db.query(nbuTable, orderBy: orderBy);
+    return result.map((json) => CachedNbu.fromJson(json)).toList();
   }
 
-  static Future<int> deleteCachedCurrencyById(int id) async {
+  static Future<int> deleteAllCachedNbus() async {
     final db = await getInstance.database;
-    var t = await db.delete(currencyTable,
-        where: "${CurrencyFields.id}=?", whereArgs: [id]);
-    if (t > 0) {
-      return t;
-    } else {
-      return -1;
-    }
-  }
-
-  // static Future<int> updateCachedProduct(
-  //     {required int id, required CachedProduct cachedProduct}) async {
-  //   Map<String, dynamic> row = {
-  //     ProductFields.name: cachedProduct.name,
-  //     ProductFields.price: cachedProduct.price,
-  //     ProductFields.count: cachedProduct.count,
-  //     ProductFields.productId: cachedProduct.productId,
-  //     ProductFields.imageUrl: cachedProduct.imageUrl,
-  //   };
-  //   final db = await getInstance.database;
-  //   return db.update(
-  //     productsTable,
-  //     row,
-  //     where: '${ProductFields.id} = ?',
-  //     whereArgs: [id],
-  //   );
-  // }
-
-  // static Future<int> updateCachedProductCount(
-  //     {required int id, required int count}) async {
-  //   Map<String, dynamic> row = {
-  //     ProductFields.count: count,
-  //   };
-  //   final db = await getInstance.database;
-  //   return db.update(
-  //     productsTable,
-  //     row,
-  //     where: '${ProductFields.id} = ?',
-  //     whereArgs: [id],
-  //   );
-  // }
-
-  Future close() async {
-    final db = await getInstance.database;
-    db.close();
+    return await db.delete(nbuTable);
   }
 }
